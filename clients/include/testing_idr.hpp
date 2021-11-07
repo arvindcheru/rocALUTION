@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -149,7 +149,7 @@ bool testing_idr(Arguments argus)
 
     ls.Init(1e-8, 0.0, 1e+8, 10000);
     ls.SetShadowSpace(l);
-    ls.SetRandomSeed(123456ULL);
+    ls.SetRandomSeed(12345ULL);
     ls.Build();
 
     // Matrix format

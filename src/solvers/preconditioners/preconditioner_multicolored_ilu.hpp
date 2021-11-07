@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 
 #include "../../base/local_vector.hpp"
 #include "../solver.hpp"
+#include "export.hpp"
 #include "preconditioner.hpp"
 #include "preconditioner_multicolored.hpp"
 
@@ -51,20 +52,26 @@ namespace rocalution
     class MultiColoredILU : public MultiColored<OperatorType, VectorType, ValueType>
     {
     public:
+        ROCALUTION_EXPORT
         MultiColoredILU();
+        ROCALUTION_EXPORT
         virtual ~MultiColoredILU();
 
+        ROCALUTION_EXPORT
         virtual void Print(void) const;
 
+        ROCALUTION_EXPORT
         virtual void ReBuildNumeric(void);
 
         /** \brief Initialize a multi-colored ILU(p, p+1) preconditioner */
+        ROCALUTION_EXPORT
         void Set(int p);
 
         /** \brief Initialize a multi-colored ILU(p, q) preconditioner
       * \details level = true will perform the factorization with levels <br>
       * level = false will perform the factorization only on the power(q)-pattern
       */
+        ROCALUTION_EXPORT
         void Set(int p, int q, bool level = true);
 
     protected:

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 #ifndef ROCALUTION_PRECONDITIONER_AS_HPP_
 #define ROCALUTION_PRECONDITIONER_AS_HPP_
 
+#include "export.hpp"
 #include "preconditioner.hpp"
 
 namespace rocalution
@@ -48,17 +49,24 @@ namespace rocalution
     class AS : public Preconditioner<OperatorType, VectorType, ValueType>
     {
     public:
+        ROCALUTION_EXPORT
         AS();
+        ROCALUTION_EXPORT
         virtual ~AS();
 
+        ROCALUTION_EXPORT
         virtual void Print(void) const;
 
         /** \brief Set number of blocks, overlap and array of preconditioners */
+        ROCALUTION_EXPORT
         void Set(int nb, int overlap, Solver<OperatorType, VectorType, ValueType>** preconds);
 
+        ROCALUTION_EXPORT
         virtual void Solve(const VectorType& rhs, VectorType* x);
 
+        ROCALUTION_EXPORT
         virtual void Build(void);
+        ROCALUTION_EXPORT
         virtual void Clear(void);
 
     protected:
@@ -106,11 +114,15 @@ namespace rocalution
     class RAS : public AS<OperatorType, VectorType, ValueType>
     {
     public:
+        ROCALUTION_EXPORT
         RAS();
+        ROCALUTION_EXPORT
         virtual ~RAS();
 
+        ROCALUTION_EXPORT
         virtual void Print(void) const;
 
+        ROCALUTION_EXPORT
         virtual void Solve(const VectorType& rhs, VectorType* x);
     };
 

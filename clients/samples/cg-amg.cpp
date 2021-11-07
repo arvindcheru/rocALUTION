@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,9 +81,6 @@ int main(int argc, char* argv[])
 
     // AMG Preconditioner
     SAAMG<LocalMatrix<double>, LocalVector<double>, double> p;
-
-    // Limit AMG preconditioner to 1 iteration per CG iteration
-    p.InitMaxIter(1);
 
     // Disable verbosity output of AMG preconditioner
     p.Verbose(0);

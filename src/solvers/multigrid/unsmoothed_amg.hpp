@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 
 #include "../solver.hpp"
 #include "base_amg.hpp"
+#include "export.hpp"
 
 #include <vector>
 
@@ -48,24 +49,31 @@ namespace rocalution
     class UAAMG : public BaseAMG<OperatorType, VectorType, ValueType>
     {
     public:
+        ROCALUTION_EXPORT
         UAAMG();
+        ROCALUTION_EXPORT
         virtual ~UAAMG();
 
+        ROCALUTION_EXPORT
         virtual void Print(void) const;
-        virtual void BuildSmoothers(void);
 
         /** \brief Set coupling strength */
+        ROCALUTION_EXPORT
         void SetCouplingStrength(ValueType eps);
         /** \brief Set over-interpolation parameter for aggregation */
+        ROCALUTION_EXPORT
         void SetOverInterp(ValueType overInterp);
 
+        ROCALUTION_EXPORT
         virtual void ReBuildNumeric(void);
 
     protected:
         virtual void Aggregate_(const OperatorType&  op,
                                 Operator<ValueType>* pro,
                                 Operator<ValueType>* res,
-                                OperatorType*        coarse);
+                                OperatorType*        coarse,
+                                ParallelManager*     pm,
+                                LocalVector<int>*    trans);
 
         virtual void PrintStart_(void) const;
         virtual void PrintEnd_(void) const;

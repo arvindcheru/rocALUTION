@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 
 #include "../solver.hpp"
 #include "base_amg.hpp"
+#include "export.hpp"
 
 namespace rocalution
 {
@@ -47,47 +48,49 @@ namespace rocalution
   * The Pairwise Aggregation Algebraic MultiGrid method is based on a pairwise
   * aggregation matching scheme. It delivers very efficient building phase which is
   * suitable for Poisson-like equation. Most of the time it requires K-cycle for the
-  * solving phase to provide low number of iterations.
+  * solving phase to provide low number of iterations. This version has multi-node
+  * support.
   * \cite pairwiseamg
   *
-  * \tparam OperatorType - can be LocalMatrix
-  * \tparam VectorType - can be LocalVector
+  * \tparam OperatorType - can be LocalMatrix or GlobalMatrix
+  * \tparam VectorType - can be LocalVector or GlobalVector
   * \tparam ValueType - can be float, double, std::complex<float> or std::complex<double>
   */
     template <class OperatorType, class VectorType, typename ValueType>
     class PairwiseAMG : public BaseAMG<OperatorType, VectorType, ValueType>
     {
     public:
+        ROCALUTION_EXPORT
         PairwiseAMG();
+        ROCALUTION_EXPORT
         virtual ~PairwiseAMG();
 
+        ROCALUTION_EXPORT
         virtual void Print(void) const;
-        virtual void BuildHierarchy(void);
+        ROCALUTION_EXPORT
         virtual void ClearLocal(void);
-        virtual void BuildSmoothers(void);
 
         /** \brief Set beta for pairwise aggregation */
+        ROCALUTION_EXPORT
         void SetBeta(ValueType beta);
         /** \brief Set re-ordering for aggregation */
+        ROCALUTION_EXPORT
         void SetOrdering(unsigned int ordering);
         /** \brief Set target coarsening factor */
+        ROCALUTION_EXPORT
         void SetCoarseningFactor(double factor);
 
+        ROCALUTION_EXPORT
         virtual void ReBuildNumeric(void);
 
     protected:
         /** \brief Constructs the prolongation, restriction and coarse operator */
-        void Aggregate_(const OperatorType&  op,
-                        Operator<ValueType>* pro,
-                        Operator<ValueType>* res,
-                        OperatorType*        coarse,
-                        LocalVector<int>*    trans);
-
-        /** \private */
         virtual void Aggregate_(const OperatorType&  op,
                                 Operator<ValueType>* pro,
                                 Operator<ValueType>* res,
-                                OperatorType*        coarse);
+                                OperatorType*        coarse,
+                                ParallelManager*     pm,
+                                LocalVector<int>*    trans);
 
         virtual void PrintStart_(void) const;
         virtual void PrintEnd_(void) const;
@@ -100,9 +103,6 @@ namespace rocalution
         double coarsening_factor_;
         // Ordering for the aggregation scheme
         unsigned int aggregation_ordering_;
-
-        // Transfer mapping
-        LocalVector<int>** trans_level_;
 
         // Dimension of the coarse operators
         std::vector<int>  dim_level_;

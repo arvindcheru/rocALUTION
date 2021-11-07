@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -54,13 +54,13 @@ endif()
 # rocALUTION project
 project(rocalution LANGUAGES CXX)
 
-# Force library install path to lib (CentOS 7 defaults to lib64)
-set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
-
 # Build flags
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Force library install path to lib (CentOS 7 defaults to lib64)
+set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
 
 # Build options
 option(BUILD_SHARED_LIBS "Build rocALUTION as a shared library" ON)
@@ -107,13 +107,19 @@ endif()
 
 
 # Setup version
-set(VERSION_STRING "1.12.3")
+set(VERSION_STRING "2.0.1")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocalution_SOVERSION 0.1)
+
+if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
+  set( BUILD_CLIENTS ON )
+endif()
 
 # rocALUTION library
 add_subdirectory(src)
 
-if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
+# Trigger client builds if selected
+if(BUILD_CLIENTS)
   add_subdirectory(clients)
 endif()
+

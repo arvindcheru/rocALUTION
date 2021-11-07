@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -84,7 +84,11 @@ add_library(roc::rocalution ALIAS rocalution)
 
 # Target link libraries
 if(SUPPORT_OMP)
-  target_link_libraries(rocalution PRIVATE OpenMP::OpenMP_CXX)
+  if(WIN32)
+    target_link_libraries(rocalution PRIVATE OpenMP::OpenMP_CXX libomp)
+  else()
+    target_link_libraries(rocalution PRIVATE OpenMP::OpenMP_CXX)
+  endif()
 endif()
 
 if(SUPPORT_MPI)
@@ -103,11 +107,13 @@ endif()
 # Target properties
 rocm_set_soversion(rocalution ${rocalution_SOVERSION})
 set_target_properties(rocalution PROPERTIES DEBUG_POSTFIX "-d")
-#set_target_properties(rocalution PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
+if(WIN32)
+  set_target_properties(rocalution PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
+endif()
 
 # Generate export header
-#include(GenerateExportHeader)
-#generate_export_header(rocalution EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/export.hpp)
+include(GenerateExportHeader)
+generate_export_header(rocalution EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/export.hpp)
 
 # Private Header include
 target_include_directories(rocalution PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
@@ -123,19 +129,37 @@ if(SUPPORT_HIP)
   endforeach()
 
   # HIP flags workaround while target_compile_options do not work
-  list(APPEND HIP_HIPCC_FLAGS "-O3 -march=native -Wno-unused-command-line-argument -fPIC")
+  list(APPEND HIP_HIPCC_FLAGS "-O3 -march=native -Wno-unused-command-line-argument -fPIC -std=c++14")
   foreach(target ${AMDGPU_TARGETS})
     list(APPEND HIP_HIPCC_FLAGS "--amdgpu-target=${target}")
   endforeach()
 
   # Create rocALUTION HIP library
-  hip_add_library(rocalution_hip ${HIP_SOURCES})
+  if(WIN32)
+    add_library(rocalution_hip OBJECT ${HIP_SOURCES})
+  else()
+    hip_add_library(rocalution_hip ${HIP_SOURCES})
+  endif()
 
   rocm_set_soversion(rocalution_hip ${rocalution_SOVERSION})
   set_target_properties(rocalution_hip PROPERTIES DEBUG_POSTFIX "-d")
 
-  target_link_libraries(rocalution_hip PRIVATE roc::rocblas roc::rocsparse roc::rocprim roc::rocrand)
+  if(WIN32)
+    target_link_libraries(rocalution_hip PRIVATE roc::rocblas roc::rocsparse roc::rocprim roc::rocrand hip::device)
+  else()
+    target_link_libraries(rocalution_hip PRIVATE roc::rocblas roc::rocsparse roc::rocprim roc::rocrand)
+  endif()
+
   target_link_libraries(rocalution PRIVATE rocalution_hip hip::host)
+endif()
+
+set_target_properties(rocalution PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
+
+if(WIN32 AND BUILD_CLIENTS AND BUILD_SHARED_LIBS)
+  add_custom_command(TARGET rocalution POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/staging/$<TARGET_FILE_NAME:rocalution> ${PROJECT_BINARY_DIR}/clients/staging/$<TARGET_FILE_NAME:rocalution>)
+  if( ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    add_custom_command(TARGET rocalution POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/staging/rocalution.pdb ${PROJECT_BINARY_DIR}/clients/staging/rocalution.pdb )
+  endif()
 endif()
 
 # Install targets
@@ -170,14 +194,25 @@ endif()
 
 # Package specific CPACK vars
 if(SUPPORT_HIP)
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-dev (>= 3.5.0), rocsparse (>= 1.12.10), rocblas (>= 2.22.0), rocprim (>= 2.10.1), rocrand (>= 0.0.1)")
-  set(CPACK_RPM_PACKAGE_REQUIRES "rocm-dev >= 3.5.0, rocsparse >= 1.12.10, rocblas >= 2.22.0, rocprim >= 2.10.1, rocrand >= 0.0.1")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip-rocclr (>= 4.0.0), rocsparse (>= 1.12.10), rocblas (>= 2.22.0), rocrand (>= 0.0.1)")
+  set(CPACK_RPM_PACKAGE_REQUIRES "hip-rocclr >= 4.0.0, rocsparse >= 1.12.10, rocblas >= 2.22.0, rocrand >= 0.0.1")
 endif()
 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md")
 
-if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
-  set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+if(WIN32)
+  set(CPACK_SOURCE_GENERATOR "ZIP")
+  set(CPACK_GENERATOR "ZIP")
+  set(CMAKE_INSTALL_PREFIX "C:/hipSDK" CACHE PATH "Install path" FORCE)
+  set(INSTALL_PREFIX "C:/hipSDK")
+  set(CPACK_SET_DESTDIR OFF)
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:/hipSDK")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "")
+  set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+else()
+  if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
+    set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+  endif()
 endif()
 
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")

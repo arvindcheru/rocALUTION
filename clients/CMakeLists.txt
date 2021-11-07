@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,11 @@ endif()
 # This tells cmake to create a compile_commands.json file that can be used with clang tooling or vim
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Build flags
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if(NOT TARGET rocalution)
   # This project may compile dependencies for clients
   project(rocalution-clients LANGUAGES CXX)
@@ -62,11 +67,6 @@ if(NOT TARGET rocalution)
   option(BUILD_CLIENTS_TESTS "Build tests." OFF)
 endif()
 
-# Build flags
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)
 endif()
@@ -81,12 +81,14 @@ if(BUILD_CLIENTS_TESTS)
 endif()
 
 # Client packaging
-include(../cmake/Packaging.cmake)
+if(NOT WIN32)
+  include(../cmake/Packaging.cmake)
 
-if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
-  rocm_create_package_clients(LIB_NAME rocalution
-                              DESCRIPTION "Radeon Open Compute library for sparse linear systems"
-                              MAINTAINER "rocALUTION Maintainer <rocalution-maintainer@amd.com>"
-                              SECTION "dev"
-                              VERSION ${rocalution_VERSION})
+  if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
+    rocm_create_package_clients(LIB_NAME rocalution
+                                DESCRIPTION "Radeon Open Compute library for sparse linear systems"
+                                MAINTAINER "rocALUTION Maintainer <rocalution-maintainer@amd.com>"
+                                SECTION "dev"
+                                VERSION ${rocalution_VERSION})
+  endif()
 endif()

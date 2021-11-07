@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,11 @@ using namespace rocalution;
 
 static bool check_residual(float res)
 {
+#ifdef WIN32
+    return (res < 1e-1f);
+#else
     return (res < 1e-2f);
+#endif
 }
 
 static bool check_residual(double res)

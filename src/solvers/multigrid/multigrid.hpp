@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #define ROCALUTION_MULTIGRID_HPP_
 
 #include "base_multigrid.hpp"
+#include "export.hpp"
 
 namespace rocalution
 {
@@ -59,11 +60,16 @@ namespace rocalution
     class MultiGrid : public BaseMultiGrid<OperatorType, VectorType, ValueType>
     {
     public:
+        ROCALUTION_EXPORT
         MultiGrid();
+        ROCALUTION_EXPORT
         virtual ~MultiGrid();
 
+        ROCALUTION_EXPORT
         virtual void SetRestrictOperator(OperatorType** op);
+        ROCALUTION_EXPORT
         virtual void SetProlongOperator(OperatorType** op);
+        ROCALUTION_EXPORT
         virtual void SetOperatorHierarchy(OperatorType** op);
     };
 
